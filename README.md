@@ -61,3 +61,15 @@ After this import, the changes can be merged first into the `upstream-renamed`
 branch and then into the `master` branch. The intermediate step is necessary
 because *git merge* would treat files that were both renamed and heavily changed
 as new files.
+
+
+## Setup with conan
+```shell
+pip install conan
+mkdir build
+
+## For debug version of the app
+conan install . --build=missing --settings=build_type=Debug
+cmake --preset conan-debug
+cmake --build --preset conan-debug
+```
