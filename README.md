@@ -77,6 +77,7 @@ cmake --build --preset conan-debug
 ## Cross-compile for Raspberry Pi
 The whole build process is based on running toolchain in Docker(thanks for this repo https://github.com/tttapa/docker-arm-cross-toolchain)
 
+### Interactive build
 ```shell
 docker build --platform linux/amd64 -t libvad-crossbuild .
 docker run -t -i -v $PWD:/current_project libvad-crossbuild /bin/bash
@@ -84,6 +85,12 @@ cd /current_project
 conan install . --build=missing -pr /build_dir/docker-arm-cross-toolchain/profiles/aarch64-rpi3-linux-gnu.conan
 cmake --preset conan-release -DENABLE_EXAMPLES=ON
 cmake --build --preset conan-release
+```
+### Cross build in the container
+```shell
+docker create --name libvad-crossbuilder libvad-crossbuild
+docker cp libvad-crossbuilder:/build_dir/build/Release/examples/fvadwav ${PWD}/fwadwav_aarch64_rpi
+docker rm -f libvad-crossbuilder
 ```
 
 ### Deploy to Raspberry Pi
