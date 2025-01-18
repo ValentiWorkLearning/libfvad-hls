@@ -1,0 +1,1 @@
+/Users/valentynkorniienko/Documents/Development/libfvad-hls/build/build/Debug/examples/fvadwav  -o=detected_voice.wav -n=not_voice.wav -l=per_frame_detect.log /Users/valentynkorniienko/Documents/PostGrad/rnnoise/sample_audios/street_10dB.opus

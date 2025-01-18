@@ -13,6 +13,7 @@
 
 #include <stdlib.h>
 #include "vad/vad_core.h"
+#include <stdio.h>
 
 // valid sample rates in kHz
 static const int valid_rates[] = { 8, 16, 32, 48 };
@@ -34,47 +35,34 @@ struct Fvad {
     size_t rate_idx; // index in valid_rates and process_funcs arrays
 };
 
+static Fvad inst;
 
-Fvad *fvad_new(void)
+void fvad_init(void)
 {
-    Fvad *inst = (Fvad *)malloc(sizeof *inst);
-    if (inst) fvad_reset(inst);
-    return inst;
+    fvad_reset();
 }
 
-
-void fvad_free(Fvad *inst)
+void fvad_reset()
 {
-    assert(inst);
-    free(inst);
-}
-
-
-void fvad_reset(Fvad *inst)
-{
-    assert(inst);
-
-    int rv = WebRtcVad_InitCore(&inst->core);
+    int rv = WebRtcVad_InitCore(&inst.core);
     assert(rv == 0);
-    inst->rate_idx = 0;
+    inst.rate_idx = 0;
 }
 
 
-int fvad_set_mode(Fvad* inst, int mode)
+int fvad_set_mode(int mode)
 {
-    assert(inst);
-    int rv = WebRtcVad_set_mode_core(&inst->core, mode);
+    int rv = WebRtcVad_set_mode_core(&inst.core, mode);
     assert(rv == 0 || rv == -1);
     return rv;
 }
 
 
-int fvad_set_sample_rate(Fvad* inst, int sample_rate)
+int fvad_set_sample_rate(int sample_rate)
 {
-    assert(inst);
     for (size_t i = 0; i < arraysize(valid_rates); i++) {
         if (valid_rates[i] * 1000 == sample_rate) {
-            inst->rate_idx = i;
+            inst.rate_idx = i;
             return 0;
         }
     }
@@ -93,13 +81,12 @@ static bool valid_length(size_t rate_idx, size_t length)
 }
 
 
-int fvad_process(Fvad* inst, const int16_t* frame, size_t length)
+int fvad_process(const int16_t* frame, size_t length)
 {
-    assert(inst);
-    if (!valid_length(inst->rate_idx, length))
+    if (!valid_length(inst.rate_idx, length))
         return -1;
 
-    int rv = process_funcs[inst->rate_idx](&inst->core, frame, length);
+    int rv = process_funcs[inst.rate_idx](&inst.core, frame, length);
     assert (rv >= 0);
     if (rv > 0) rv = 1;
 

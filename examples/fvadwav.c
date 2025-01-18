@@ -18,7 +18,10 @@
 #include <unistd.h>
 #include <sndfile.h>
 
-static bool process_sf(SNDFILE *infile, Fvad *vad,
+#include <stdio.h>
+#include <time.h>
+
+static bool process_sf(SNDFILE *infile,
     size_t framelen, SNDFILE *outfiles[2], FILE *listfile)
 {
     bool success = false;
@@ -41,11 +44,18 @@ static bool process_sf(SNDFILE *infile, Fvad *vad,
         for (size_t i = 0; i < framelen; i++)
             buf1[i] = buf0[i] * INT16_MAX;
 
-        vadres = fvad_process(vad, buf1, framelen);
+        clock_t start = clock();
+        vadres = fvad_process(buf1, framelen);
         if (vadres < 0) {
             fprintf(stderr, "VAD processing failed\n");
             goto end;
         }
+        clock_t end = clock();
+
+        double time_spent = (double)(end - start) / CLOCKS_PER_SEC * 1e6;
+        printf("Time taken by fvad_process: %.2f microseconds\n", time_spent);
+
+
 
         if (listfile) {
             fprintf(listfile, "%d\n", vadres);
@@ -106,16 +116,11 @@ int main(int argc, char *argv[])
     SF_INFO in_info = {0}, out_info[2];
     FILE *list_file = NULL;
     int mode, frame_ms = 10;
-    Fvad *vad = NULL;
 
     /*
      * create fvad instance
      */
-    vad = fvad_new();
-    if (!vad) {
-        fprintf(stderr, "out of memory\n");
-        goto fail;
-    }
+    fvad_init();
 
     /*
      * parse arguments
@@ -123,7 +128,7 @@ int main(int argc, char *argv[])
     for (int ch; (ch = getopt(argc, argv, "m:f:o:n:l:h")) != -1;) {
         switch (ch) {
         case 'm':
-            if (!parse_int(&mode, optarg, 0, 3) || fvad_set_mode(vad, mode) < 0) {
+            if (!parse_int(&mode, optarg, 0, 3) || fvad_set_mode(mode) < 0) {
                 fprintf(stderr, "invalid mode '%s'\n", optarg);
                 goto argfail;
             }
@@ -187,7 +192,7 @@ int main(int argc, char *argv[])
         goto fail;
     }
 
-    if (fvad_set_sample_rate(vad, in_info.samplerate) < 0) {
+    if (fvad_set_sample_rate(in_info.samplerate) < 0) {
         fprintf(stderr, "invalid sample rate: %d Hz\n", in_info.samplerate);
         goto fail;
     }
@@ -221,7 +226,7 @@ int main(int argc, char *argv[])
     /*
      * run main loop
      */
-    if (!process_sf(in_sf, vad,
+    if (!process_sf(in_sf,
             (size_t)in_info.samplerate / 1000 * frame_ms, out_sf, list_file))
         goto fail;
 
@@ -243,7 +248,6 @@ end:
     for (int i = 0; i < 2; i++)
         if (out_sf[i]) sf_close(out_sf[i]);
     if (list_file) fclose(list_file);
-    if (vad) fvad_free(vad);
 
     return retval;
 }

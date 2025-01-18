@@ -33,19 +33,19 @@ typedef struct Fvad Fvad;
  *
  * Returns NULL in case of a memory allocation error.
  */
-Fvad *fvad_new(void);
+void fvad_init(void);
 
 /*
  * Frees the dynamic memory of a specified VAD instance.
  */
-void fvad_free(Fvad *inst);
+void fvad_free();
 
 
 /*
  * Reinitializes a VAD instance, clearing all state and resetting mode and
  * sample rate to defaults.
  */
-void fvad_reset(Fvad *inst);
+void fvad_reset();
 
 
 /*
@@ -61,7 +61,7 @@ void fvad_reset(Fvad *inst);
  *
  * Returns 0 on success, or -1 if the specified mode is invalid.
  */
-int fvad_set_mode(Fvad* inst, int mode);
+int fvad_set_mode(int mode);
 
 
 /*
@@ -73,7 +73,7 @@ int fvad_set_mode(Fvad* inst, int mode);
  *
  * Returns 0 on success, or -1 if the passed value is invalid.
  */
-int fvad_set_sample_rate(Fvad* inst, int sample_rate);
+int fvad_set_sample_rate(int sample_rate);
 
 
 /*
@@ -87,7 +87,7 @@ int fvad_set_sample_rate(Fvad* inst, int sample_rate);
  *                        0 - (non-active Voice),
  *                       -1 - (invalid frame length).
  */
-int fvad_process(Fvad* inst, const int16_t* frame, size_t length);
+int fvad_process(const int16_t* frame, size_t length);
 
 #ifdef __cplusplus
 }

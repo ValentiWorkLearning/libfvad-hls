@@ -16,3 +16,5 @@ target_link_libraries(
     mimalloc-static
 )
 install(TARGETS fvadwav DESTINATION bin)
+
+target_link_libraries(fvadwav PUBLIC -static)
