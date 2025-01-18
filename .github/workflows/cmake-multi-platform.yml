@@ -31,7 +31,7 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
-            conan_profile: conan-release
+            conan_profile: conan-default
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
@@ -46,7 +46,7 @@ jobs:
           - os: windows-latest
             c_compiler: clang
           - os: windows-latest
-            conan_profile: conan-default
+            conan_profile: conan-release
           - os: ubuntu-latest
             c_compiler: cl
           - os: ubuntu-latest
