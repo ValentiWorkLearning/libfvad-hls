@@ -89,6 +89,20 @@ int fvad_set_sample_rate(int sample_rate);
  */
 int fvad_process(const int16_t* frame, size_t length);
 
+
+/*
+ * Calculates a VAD decision for an audio frame.
+ *
+ * `frame` is an array of `length` signed 16-bit samples. Only frames with a
+ * length of 10, 20 or 30 ms are supported, so for example at 8 kHz, `length`
+ * must be either 80, 160 or 240.
+ *
+ * Returns              : 1 - (active voice),
+ *                        0 - (non-active Voice),
+ *                       -1 - (invalid frame length).
+ */
+void fvad_process_standalone(const int16_t* frame, size_t length, int* vad_result);
+
 #ifdef __cplusplus
 }
 #endif

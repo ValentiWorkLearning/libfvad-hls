@@ -92,3 +92,16 @@ int fvad_process(const int16_t* frame, size_t length)
 
     return rv;
 }
+
+
+void fvad_process_standalone(const int16_t* frame, size_t length, int* vad_result)
+{
+    static bool is_initialised = false;
+    if(!is_initialised){
+        is_initialised = true;
+        fvad_init();
+        fvad_set_sample_rate(48000);
+    }
+
+    *vad_result = fvad_process(frame,length);
+}
