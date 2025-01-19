@@ -61,3 +61,39 @@ After this import, the changes can be merged first into the `upstream-renamed`
 branch and then into the `master` branch. The intermediate step is necessary
 because *git merge* would treat files that were both renamed and heavily changed
 as new files.
+
+
+## Setup with conan
+```shell
+pip install conan
+mkdir build
+
+## For debug version of the app
+conan install . --build=missing --settings=build_type=Debug
+cmake --preset conan-debug
+cmake --build --preset conan-debug
+```
+
+## Cross-compile for Raspberry Pi
+The whole build process is based on running toolchain in Docker(thanks for this repo https://github.com/tttapa/docker-arm-cross-toolchain)
+
+### Interactive build
+```shell
+docker build --platform linux/amd64 -t libvad-crossbuild .
+docker run -t -i -v $PWD:/current_project libvad-crossbuild /bin/bash
+cd /current_project
+conan install . --build=missing -pr /build_dir/docker-arm-cross-toolchain/profiles/aarch64-rpi3-linux-gnu.conan
+cmake --preset conan-release -DENABLE_EXAMPLES=ON
+cmake --build --preset conan-release
+```
+### Cross build in the container
+```shell
+docker create --name libvad-crossbuilder libvad-crossbuild
+docker cp libvad-crossbuilder:/build_dir/build/Release/examples/fvadwav ${PWD}/fwadwav_aarch64_rpi
+docker rm -f libvad-crossbuilder
+```
+
+### Deploy to Raspberry Pi
+```shell
+python3.11 deploy_to_remote_target.py --ip="192.168.0.119" --local-path=${PWD}/build/Release/examples/fvadwav --remote-path=/home/pi/Documents/phd/vad_playground
+```
